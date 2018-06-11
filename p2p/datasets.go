@@ -21,6 +21,7 @@ const listMax = 30
 type DatasetsListParams struct {
 	Limit  int
 	Offset int
+	RPC    bool
 }
 
 // RequestDatasetsList gets a list of a peer's datasets
@@ -42,7 +43,7 @@ func (n *QriNode) RequestDatasetsList(pid peer.ID, p DatasetsListParams) ([]repo
 		return nil, err
 	}
 
-	req = req.WithHeaders("phase", "request")
+	req = req.WithHeaders("phase", "request", "RPC", fmt.Sprintf("%v", p.RPC))
 
 	replies := make(chan Message)
 	err = n.SendMessage(req, replies, pid)
@@ -87,6 +88,13 @@ func (n *QriNode) handleDatasetsList(ws *WrappedStream, msg Message) (hangup boo
 				return
 			}
 			refs[i].Dataset = ds.Encode()
+			// The gob encoder that encodes from go to the terminal does not understand how to
+			// handle `map[string]interface{}`s that contain a field of `map[string]interface{}`
+			// in this case, the offender is the Structure.Schema. If we are using RPC, let's clear
+			// the schema since, for now, we don't need it to list a peer's datasets
+			if msg.Header("RPC") == "true" && refs[i].Dataset.Structure != nil && refs[i].Dataset.Structure.Schema != nil {
+				refs[i].Dataset.Structure.Schema = map[string]interface{}{}
+			}
 		}
 
 		reply, err := msg.UpdateJSON(refs)

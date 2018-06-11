@@ -125,7 +125,9 @@ func (r *DatasetRequests) List(p *ListParams, res *[]repo.DatasetRef) error {
 		replies, err := r.Node.RequestDatasetsList(pro.PeerIDs[0], p2p.DatasetsListParams{
 			Limit:  p.Limit,
 			Offset: p.Offset,
+			RPC:    p.RPC,
 		})
+
 		*res = replies
 		if err != nil {
 			err = fmt.Errorf("error requesting dataset list: %s", err.Error())
