@@ -63,7 +63,16 @@ command in the background or in another terminal window.
 	connect := &cobra.Command{
 		Use:   "connect",
 		Short: "connect to a peer",
-		Args:  cobra.MinimumNArgs(1),
+		Long: `
+attempt to connect directly to a peer. Useful if you know a peer's ID or 
+peername, but have not seen them on your peer list before.
+`,
+		Example: `  to connect to a peer using an ID:
+  $ qri peers connect QmRcJME3LB6zjLsHesDuvZnW1ZA7g4L8zewF6fKDtEGiyY
+
+  to connect to a peer using a peername:
+  $ qri peers connect b5`,
+		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			ExitIfErr(o.Complete(f, args))
 			ExitIfErr(o.Connect())
